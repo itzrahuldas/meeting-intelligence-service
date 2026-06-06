@@ -308,7 +308,7 @@ export async function analyzeTranscript(
       throw new Error(`OpenRouter API error: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data: any = await response.json();
     const responseText = data.choices?.[0]?.message?.content;
 
     if (!responseText) {

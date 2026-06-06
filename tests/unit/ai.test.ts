@@ -2,25 +2,9 @@
 // tests/unit/ai.test.ts — AI service unit tests
 // ---------------------------------------------------------------------------
 
-// Mock the Google Generative AI module BEFORE importing the service
-const mockGenerateContent = jest.fn();
-
-jest.mock('@google/generative-ai', () => ({
-  GoogleGenerativeAI: jest.fn().mockImplementation(() => ({
-    getGenerativeModel: jest.fn().mockReturnValue({
-      generateContent: mockGenerateContent,
-    }),
-  })),
-  HarmCategory: {
-    HARM_CATEGORY_HARASSMENT: 'HARM_CATEGORY_HARASSMENT',
-    HARM_CATEGORY_HATE_SPEECH: 'HARM_CATEGORY_HATE_SPEECH',
-    HARM_CATEGORY_SEXUALLY_EXPLICIT: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-    HARM_CATEGORY_DANGEROUS_CONTENT: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-  },
-  HarmBlockThreshold: {
-    BLOCK_NONE: 'BLOCK_NONE',
-  },
-}));
+// No longer mocking @google/generative-ai
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
 
 import { analyzeTranscript, TranscriptEntry } from '../../src/services/ai.service';
 
@@ -82,13 +66,20 @@ const validAIResponse = {
   ],
 };
 
-// Helper to build the mock Gemini response object
+// Helper to build the mock OpenRouter response object
 function buildGeminiResponse(data: object) {
-  return {
-    response: {
-      text: () => JSON.stringify(data),
-    },
-  };
+  return Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify(data)
+          }
+        }
+      ]
+    })
+  });
 }
 
 // ── Tests ───────────────────────────────────────────────────────────────────
@@ -100,11 +91,11 @@ describe('AI Service', () => {
 
   describe('analyzeTranscript', () => {
     it('should return a structured analysis for a valid transcript', async () => {
-      mockGenerateContent.mockResolvedValue(buildGeminiResponse(validAIResponse));
+      mockFetch.mockReturnValueOnce(buildGeminiResponse(validAIResponse));
 
       const result = await analyzeTranscript(validTranscript);
 
-      expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(result).toHaveProperty('summary');
       expect(result).toHaveProperty('actionItems');
       expect(result).toHaveProperty('decisions');
@@ -113,7 +104,7 @@ describe('AI Service', () => {
     });
 
     it('should include citation references for summary items', async () => {
-      mockGenerateContent.mockResolvedValue(buildGeminiResponse(validAIResponse));
+      mockFetch.mockReturnValueOnce(buildGeminiResponse(validAIResponse));
 
       const result = await analyzeTranscript(validTranscript);
 
@@ -145,7 +136,7 @@ describe('AI Service', () => {
         ],
       };
 
-      mockGenerateContent.mockResolvedValue(buildGeminiResponse(responseWithBadCitation));
+      mockFetch.mockReturnValueOnce(buildGeminiResponse(responseWithBadCitation));
 
       const result = await analyzeTranscript(validTranscript);
 
@@ -157,12 +148,20 @@ describe('AI Service', () => {
     });
 
     it('should handle AI returning JSON wrapped in markdown code fences', async () => {
-      mockGenerateContent.mockResolvedValue({
-        response: {
-          text: () =>
-            '```json\n' + JSON.stringify(validAIResponse) + '\n```',
-        },
-      });
+      mockFetch.mockReturnValueOnce(
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            choices: [
+              {
+                message: {
+                  content: '```json\n' + JSON.stringify(validAIResponse) + '\n```'
+                }
+              }
+            ]
+          })
+        })
+      );
 
       const result = await analyzeTranscript(validTranscript);
 
@@ -171,7 +170,12 @@ describe('AI Service', () => {
     });
 
     it('should throw an error when the AI service completely fails', async () => {
-      mockGenerateContent.mockRejectedValue(new Error('Gemini API rate limit exceeded'));
+      mockFetch.mockReturnValueOnce(
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ choices: [] }) // Empty choices throws AppError
+        })
+      );
 
       await expect(analyzeTranscript(validTranscript)).rejects.toThrow();
     });
@@ -184,7 +188,7 @@ describe('AI Service', () => {
         followUps: [],
       };
 
-      mockGenerateContent.mockResolvedValue(buildGeminiResponse(minimalResponse));
+      mockFetch.mockReturnValueOnce(buildGeminiResponse(minimalResponse));
 
       const result = await analyzeTranscript(validTranscript);
 
