@@ -1,7 +1,7 @@
 # 🧠 Meeting Intelligence Service
 
 > A complete full-stack AI-powered meeting intelligence platform built for the Hintro Backend Engineering Assignment. 
-> It processes meeting transcripts with Google Gemini, extracts structured insights with citation grounding, manages action items, and features a beautiful Next.js frontend.
+> It processes meeting transcripts with OpenRouter Llama 3.3, extracts structured insights with citation grounding, manages action items, and features a beautiful Next.js frontend.
 
 ---
 ---
@@ -39,7 +39,7 @@
 ### ⚙️ Backend (Node.js & Express)
 - **JWT Authentication** — Secure register/login with bcrypt password hashing
 - **Meeting CRUD** — Create, list, and retrieve meetings with full transcript storage
-- **AI Analysis (Gemini 2.0 Flash)** — Structured JSON extraction of summaries, decisions, follow-ups, and action items
+- **AI Analysis (OpenRouter Llama 3.3 70B)** — Structured JSON extraction of summaries, decisions, follow-ups, and action items
 - **Citation Grounding Engine** — Validates AI outputs against the original transcript to aggressively prevent hallucination
 - **Action Item Cron Service** — node-cron job detects overdue items and triggers updates
 - **Discord Integrations** — Sends automated rich embed notifications for overdue action items
@@ -60,7 +60,7 @@
 - **Runtime**: Node.js 20, TypeScript 5
 - **Framework**: Express 4
 - **Database**: PostgreSQL 16 + Prisma ORM
-- **AI Engine**: Google Gemini 2.0 Flash
+- **AI Engine**: OpenRouter (Llama 3.3 70B)
 - **Validation**: Zod
 - **Scheduling**: node-cron
 - **Deployment**: Render
