@@ -39,6 +39,14 @@
 
 ---
 
+## 🏗 System Architecture
+
+![Hintro Meeting Intelligence Cloud Architecture](./docs/architecture.png)
+
+*The system uses a modern, serverless edge-ready architecture, strictly separating concerns between the Next.js presentation layer, the Express API gateway, the PostgreSQL persistence layer, and the OpenRouter AI Intelligence engine.*
+
+---
+
 ## 🛠 Tech Stack
 
 ### Frontend
