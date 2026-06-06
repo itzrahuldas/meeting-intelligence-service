@@ -10,6 +10,8 @@ const env = {
   CANDIDATE_EMAIL: process.env.CANDIDATE_EMAIL || 'rahul@example.com',
   REPOSITORY_URL: process.env.REPOSITORY_URL || '',
   DEPLOYED_URL: process.env.DEPLOYED_URL || '',
+  FRONTEND_URL: process.env.FRONTEND_URL || '',   // Vercel deployment URL
 } as const;
+
 
 export default env;

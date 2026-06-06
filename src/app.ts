@@ -14,11 +14,33 @@ import { authRoutes } from './modules/auth/auth.routes';
 import { meetingRoutes } from './modules/meetings/meetings.routes';
 import { actionItemRoutes } from './modules/action-items/actionItems.routes';
 
+const ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  /\.vercel\.app$/,         // any *.vercel.app preview/prod
+  env.FRONTEND_URL,         // explicit override via env
+].filter(Boolean);
+
+
 const app = express();
 
 // Security & parsing middleware
-app.use(helmet());
-app.use(cors({ origin: '*' }));
+app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, Postman, server-to-server)
+      if (!origin) return callback(null, true);
+      const allowed = ALLOWED_ORIGINS.some((o) =>
+        typeof o === 'string' ? o === origin : o.test(origin)
+      );
+      callback(allowed ? null : new Error('Not allowed by CORS'), allowed);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Trace-Id'],
+  })
+);
 app.use(express.json({ limit: '10mb' }));
 
 // Request tracing & logging
