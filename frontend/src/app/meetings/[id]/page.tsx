@@ -165,18 +165,42 @@ export default function MeetingDetailPage() {
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" /></svg>
                       Summary
                     </h3>
-                    {analysis.summary.overview && <p className="text-gray-300 text-sm leading-relaxed mb-4">{analysis.summary.overview}</p>}
-                    {analysis.summary.keyTopics?.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {analysis.summary.keyTopics.map((t: string, i: number) => (
-                          <span key={i} className="text-xs px-3 py-1 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">{t}</span>
+                    {Array.isArray(analysis.summary) ? (
+                      <div className="space-y-4">
+                        {analysis.summary.map((s: any, i: number) => (
+                          <div key={i}>
+                            <p className="text-gray-300 text-sm leading-relaxed mb-2">{s.text || s.overview}</p>
+                            {s.keyTopics?.length > 0 && (
+                              <div className="flex flex-wrap gap-2 mb-2">
+                                {s.keyTopics.map((t: string, k: number) => (
+                                  <span key={k} className="text-xs px-3 py-1 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">{t}</span>
+                                ))}
+                              </div>
+                            )}
+                            {s.citations?.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {s.citations.map((c: any, j: number) => <CitationPill key={j} c={c} />)}
+                              </div>
+                            )}
+                          </div>
                         ))}
                       </div>
-                    )}
-                    {analysis.summary.citations?.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {analysis.summary.citations.map((c: any, i: number) => <CitationPill key={i} c={c} />)}
-                      </div>
+                    ) : (
+                      <>
+                        {analysis.summary.overview && <p className="text-gray-300 text-sm leading-relaxed mb-4">{analysis.summary.overview}</p>}
+                        {analysis.summary.keyTopics?.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {analysis.summary.keyTopics.map((t: string, i: number) => (
+                              <span key={i} className="text-xs px-3 py-1 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">{t}</span>
+                            ))}
+                          </div>
+                        )}
+                        {analysis.summary.citations?.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {analysis.summary.citations.map((c: any, i: number) => <CitationPill key={i} c={c} />)}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
