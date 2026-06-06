@@ -283,41 +283,33 @@ export async function analyzeTranscript(
 ): Promise<AnalysisResult> {
   logger.info('Starting AI transcript analysis', { entryCount: transcript.length });
 
-  const client = getClient();
-
-  const model = client.getGenerativeModel({
-    model: 'gemini-2.0-flash',
-    generationConfig: {
-      temperature: 0,
-      topP: 1,
-      maxOutputTokens: 8192,
-    },
-    safetySettings: [
-      {
-        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-        threshold: HarmBlockThreshold.BLOCK_NONE,
-      },
-      {
-        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-        threshold: HarmBlockThreshold.BLOCK_NONE,
-      },
-      {
-        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-        threshold: HarmBlockThreshold.BLOCK_NONE,
-      },
-      {
-        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-        threshold: HarmBlockThreshold.BLOCK_NONE,
-      },
-    ],
-  });
-
   const prompt = buildPrompt(transcript);
 
   try {
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const responseText = response.text();
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.GEMINI_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://meeting-intelligence.onrender.com', // Optional for OpenRouter
+        'X-Title': 'Meeting Intelligence Service' // Optional for OpenRouter
+      },
+      body: JSON.stringify({
+        model: 'meta-llama/llama-3.3-70b-instruct:free',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0,
+        response_format: { type: 'json_object' }
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      logger.error('OpenRouter API error', { status: response.status, errText });
+      throw new Error(`OpenRouter API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const responseText = data.choices?.[0]?.message?.content;
 
     if (!responseText) {
       throw new AppError(500, 'AI_ERROR', 'AI service returned an empty response');
@@ -341,7 +333,7 @@ export async function analyzeTranscript(
       throw error;
     }
 
-    logger.warn('Gemini API call failed (likely due to regional quota limit or disabled key). Falling back to mock AI data so the assignment can still be demonstrated.', { error: error instanceof Error ? error.message : 'Unknown error' });
+    logger.warn('AI API call failed. Falling back to mock AI data so the assignment can still be demonstrated.', { error: error instanceof Error ? error.message : 'Unknown error' });
     
     // Graceful fallback to allow the application to function without a working API key
     const mockAnalysis: AnalysisResult = {
