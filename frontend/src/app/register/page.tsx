@@ -18,7 +18,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return; }
+    if (form.password.length < 8) { setError('Password must be at least 8 characters.'); return; }
     setSubmitting(true);
     try {
       await register(form.name, form.email, form.password);
@@ -58,7 +58,7 @@ export default function RegisterPage() {
             {[
               { label: 'Full Name', key: 'name', type: 'text', placeholder: 'John Doe' },
               { label: 'Email', key: 'email', type: 'email', placeholder: 'you@example.com' },
-              { label: 'Password', key: 'password', type: 'password', placeholder: '•••••••• (min 6 chars)' },
+              { label: 'Password', key: 'password', type: 'password', placeholder: '•••••••• (min 8 chars)' },
             ].map(({ label, key, type, placeholder }) => (
               <div key={key}>
                 <label className="block text-sm font-medium text-gray-300 mb-1.5">{label}</label>
