@@ -4,6 +4,15 @@
 > It processes meeting transcripts with Google Gemini, extracts structured insights with citation grounding, manages action items, and features a beautiful Next.js frontend.
 
 ---
+---
+
+## 🏗 System Architecture
+
+![Hintro Meeting Intelligence Cloud Architecture](./docs/architecture.png)
+
+*The system uses a modern, serverless edge-ready architecture, strictly separating concerns between the Next.js presentation layer, the Express API gateway, the PostgreSQL persistence layer, and the OpenRouter AI Intelligence engine.*
+
+---
 
 ## 🚀 Live Demos
 
@@ -37,15 +46,7 @@
 - **Rate Limiting** — 3-tier limiting: global (100/15min), auth (10/15min), AI (20/hr)
 - **Structured Logging** — Winston with trace UUIDs attached to every request
 
----
 
-## 🏗 System Architecture
-
-![Hintro Meeting Intelligence Cloud Architecture](./docs/architecture.png)
-
-*The system uses a modern, serverless edge-ready architecture, strictly separating concerns between the Next.js presentation layer, the Express API gateway, the PostgreSQL persistence layer, and the OpenRouter AI Intelligence engine.*
-
----
 
 ## 🛠 Tech Stack
 
