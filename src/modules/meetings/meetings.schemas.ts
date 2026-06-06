@@ -9,7 +9,7 @@ const transcriptEntrySchema = z.object({
 export const createMeetingSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255),
   participants: z
-    .array(z.string().email('Each participant must be a valid email'))
+    .array(z.string().min(1, 'Participant name cannot be empty'))
     .min(1, 'At least one participant is required'),
   meetingDate: z.string().datetime('Invalid date-time format (use ISO 8601)'),
   transcript: z
