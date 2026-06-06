@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  meetings  Meeting[]
+
+  @@map("users")
+}
+
+model Meeting {
+  id           String          @id @default(uuid())
+  title        String
+  participants String[]
+  meetingDate  DateTime
+  transcript   Json
+  userId       String
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  analysis     MeetingAnalysis?
+  actionItems  ActionItem[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([meetingDate])
+  @@map("meetings")
+}
+
+model MeetingAnalysis {
+  id        String   @id @default(uuid())
+  meetingId String   @unique
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  summary   Json
+  decisions Json
+  followUps Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("meeting_analyses")
+}
+
+model ActionItem {
+  id         String            @id @default(uuid())
+  task       String
+  assignee   String
+  status     ActionItemStatus  @default(PENDING)
+  dueDate    DateTime?
+  citations  Json?
+  meetingId  String
+  meeting    Meeting           @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  reminders  ReminderHistory[]
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([meetingId])
+  @@index([status])
+  @@index([assignee])
+  @@index([dueDate])
+  @@map("action_items")
+}
+
+enum ActionItemStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model ReminderHistory {
+  id           String     @id @default(uuid())
+  actionItemId String
+  actionItem   ActionItem @relation(fields: [actionItemId], references: [id], onDelete: Cascade)
+  channel      String
+  success      Boolean
+  errorMessage String?
+  sentAt       DateTime   @default(now())
+
+  @@index([actionItemId])
+  @@index([sentAt])
+  @@map("reminder_history")
+}
